@@ -139,7 +139,6 @@ Color Scene::trace(const Ray ray, uint32_t depth, double c, Object *parent)
     
     /* If translucent, get new ray and trace */
     Color c_refracted;
-    double tamt = 0.0;
     if(c * kt > _cutoff && depth > 1) {
         //direct = Color::Black;
         c_refracted = trace(ray, depth - 1, c * kt, obj);
