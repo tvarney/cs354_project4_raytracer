@@ -78,24 +78,28 @@ Color Scene::trace(const Ray ray, uint32_t depth, double c, Object *parent)
     Object *obj = intersect(ray, normal, parent);
     
     if(obj == NULL) {
+        return Color::Black;
         return (parent != NULL ? _ambient : Color::Black);
     }
     
     /* Initialize direct light contribution from scene ambient */
-    Color direct;
+    Color ambient, diffuse, specular;
     if(Light::Ambient) {
-        direct += obj->material().base * _ambient;
+        ambient = obj->material().base * _ambient;
     }
     
     Ray lightray, lightnorm;
+    Color t_diff, t_spec;
     Object *blocking = NULL;
-    for(size_t i = 0; i < _lights.size(); ++i) {
+    for(size_t i = 0; i < lights().size(); ++i) {
         /* Get new ray origin from intersection point - the origin of the ray
          * is displaced a tiny bit to keep it from intersecting with the same
          * position.
          */
+        t_diff = Color::Black;
+        t_spec = Color::Black;
         if(_lights[i].point == false) {
-            direct += _lights[i].get(ray, normal, obj->material());
+            _lights[i].get(ray, normal, obj->material(), &t_diff, &t_spec);
         }else {
             lightray.origin = normal.origin;
             lightray.direction = _lights[i].direction(lightray.origin);
@@ -106,19 +110,22 @@ Color Scene::trace(const Ray ray, uint32_t depth, double c, Object *parent)
              */
             Point3d lightpos(_lights[i].x, _lights[i].y, _lights[i].z);
             if(blocking == NULL) {
-                direct += _lights[i].get(ray, normal, obj->material());
+                _lights[i].get(ray, normal, obj->material(), &t_diff, &t_spec);
             }else {
                 double d1 = (lightpos - lightray.origin).magsquared();
                 double d2 = (lightnorm.origin - lightray.origin).magsquared();
                 if(d1 < d2) {
-                    direct += _lights[i].get(ray, normal, obj->material());
+                    _lights[i].get(ray, normal, obj->material(), &t_diff,
+                                   &t_spec);
                 }else if(blocking->material().kt > 0.0) {
-                    direct += _lights[i].get(ray, normal, obj->material()) *
-                        blocking->material().kt;
-                    
+                    _lights[i].get(ray, normal, obj->material(), &t_diff,
+                                   &t_spec);
                 }
             }
         }
+        
+        diffuse += t_diff;
+        specular += t_spec;
     }
     
     double kr = obj->material().kr;
@@ -133,7 +140,7 @@ Color Scene::trace(const Ray ray, uint32_t depth, double c, Object *parent)
            RIGHT RESULTS */
         reflect_ray.direction =
             -cs354::reflect(ray.direction, normal.direction);
-        reflect_ray.direction.z *= -1;
+        //reflect_ray.direction.z *= -1;
         reflection = trace(reflect_ray, depth - 1, c * kr, obj);
     }
     
@@ -144,19 +151,20 @@ Color Scene::trace(const Ray ray, uint32_t depth, double c, Object *parent)
         c_refracted = trace(ray, depth - 1, c * kt, obj);
     }
     
-    /*
     if(!_reflect) {
         kr = 0.0;
     }
-    double total = tamt + kr;
+    
+    double total = (kt + kr) * 0.75;
     if(total > 1.0) {
-        tamt /= total;
+        kt /= total;
         kr /= total;
         total = 1.0;
     }
     double kd = 1.0 - total;
-    */
-    return (direct * c) + (reflection) + (c_refracted);
+    
+    return ((ambient + diffuse) * kd + specular) * c + reflection +
+        c_refracted;
 }
 
 Object* Scene::intersect(const Ray ray, Ray & normal, const Object *ignore)

@@ -35,13 +35,14 @@ static inline double saturate(double val) {
     return (val > 1.0 ? 1.0 : (val < 0.0 ? 0.0 : val));
 }
 Color Light::get(const Ray &ray, const Ray &normal, const Material &mat,
-                 bool diffuse, bool specular) const
+                 Color *diffuse, Color *specular) const
 {
     if(!Light::Diffuse && !Light::Specular) {
         if(!Light::Ambient) {
             Vector3d ld = direction(normal.origin);
             double ndotl = saturate(dot(normal.direction, ld));
-            return Color(ndotl, ndotl, ndotl);
+            Color diff(ndotl, ndotl, ndotl);
+            *diffuse = diff;
             //return NormalToColor(normal.direction);
         }
         return Color::Black;
@@ -63,12 +64,13 @@ Color Light::get(const Ray &ray, const Ray &normal, const Material &mat,
         light_dir = Vector3d(-x, -y, -z);
         attenuation = 1.0;
     }
-    Color result;
-    if(Light::Diffuse && diffuse) {
+    Color cdiff;
+    if(Light::Diffuse) {
         double ndotl = saturate(dot(normal.direction, light_dir));
-        result += mat.base * (color * (mat.kd * ndotl * attenuation));
+        cdiff = mat.base * (color * (mat.kd * ndotl * attenuation));
     }
     
+    Color cspec;
     if(Light::Specular && specular) {
         Vector3d eye_dir = -(ray.direction);
         /* Reflect L about normal.direction  */
@@ -80,10 +82,15 @@ Color Light::get(const Ray &ray, const Ray &normal, const Material &mat,
             Vector3d reflected = reflect(light_dir,normal.direction);
             base = saturate(dot(normalize(reflected), eye_dir));
         }
-        result += mat.highlight * (color * std::pow(base, mat.ks) *
-                                   attenuation);
+        cspec = mat.highlight * (color * std::pow(base, mat.ks) * attenuation);
     }
-    return result;
+    if(diffuse != NULL) {
+        *diffuse = cdiff;
+    }
+    if(specular != NULL) {
+        *specular = cspec;
+    }
+    return cdiff + cspec;
 }
 
 Light & Light::operator=(const Light &light) {

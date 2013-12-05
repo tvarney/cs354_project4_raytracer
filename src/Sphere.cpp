@@ -17,6 +17,47 @@ Sphere::Sphere(const Sphere &source) :
 Sphere::~Sphere() { }
 
 bool Sphere::intersect(const Ray &ray, Ray &result) const {
+    double t0, t1;
+    if(!(find_dist(ray, &t0, &t1))) {
+        return false;
+    }
+    
+    if(t1 <= 0) {
+        return false;
+    }
+    double t = (t0 < 0 ? t1 : t0);
+    
+    result.origin = ray.origin + t * ray.direction;
+    result.direction = normalize(result.origin - pos);
+    return true;
+}
+
+bool Sphere::bisect(const Ray &ray, Ray &result) const {
+    double t0, t1;
+    if(!(find_dist(ray, &t0, &t1))) {
+        return false;
+    }
+    
+    if(t1 <= 0) {
+        return false;
+    }
+    
+    double t = (t0 < 0 ? t1 : t0);
+    
+    result.origin = ray.origin + t * ray.direction;
+    result.direction = normalize(result.origin - pos);
+    return true;
+}
+
+void Sphere::move(Vector3d direction) {
+    pos = pos + direction;
+}
+
+Sphere * Sphere::clone() const {
+    return new Sphere(pos, radius, mat);
+}
+
+bool Sphere::find_dist(const Ray &ray, double *t0, double *t1) const {
     Ray r = ray.transform(pos);
     double a = r.direction.dot(ray.direction);
     double b = 2.0 * (r.direction.x * r.origin.x + r.direction.y * r.origin.y +
@@ -37,59 +78,7 @@ bool Sphere::intersect(const Ray &ray, Ray &result) const {
         q = (-b + disc_sqrt) * 0.5;
     }
     
-    double t0 = q / a;
-    float t1 = c / q;
-    
-    if(t1 <= 0) {
-        return false;
-    }
-    double t = (t0 < 0 ? t1 : t0);
-    
-    result.origin = ray.origin + t * ray.direction;
-    result.direction = normalize(result.origin - pos);
+    *t0 = q / a;
+    *t1 = c / q;
     return true;
-}
-
-bool Sphere::bisect(const Ray &ray, Ray &result) const {
-    Ray r = ray.transform(pos);
-    double a = dot(ray.direction, ray.direction);
-    double b = 2.0 * dot(r.direction, r.origin);
-    double c = dot(r.origin, r.origin);
-    
-    double disc = b*b - 4 * a * c;
-    if(disc < 0) {
-        std::cout << "Discriminant < 0:" << std::endl <<
-            "a: " << a << " b: " << b << " c: " << c << std::endl;
-        return false;
-    }
-    
-    double disc_sqrt = std::sqrt(disc);
-    double q;
-    if(b < 0) {
-        q = (-b - disc_sqrt) * 0.5;
-    }else {
-        q = (-b + disc_sqrt) * 0.5;
-    }
-    
-    double t0 = q / a;
-    double t1 = c / q;
-    
-    if(t1 < 0) {
-        std::cout << "t1 < 0" << std::endl;
-        return false;
-    }
-    
-    double t = (t0 <= 0 ? t1 : t0);
-    
-    result = ray.project(t);
-    result.direction = (result.origin - pos) / radius;
-    return true;
-}
-
-void Sphere::move(Vector3d direction) {
-    pos = pos + direction;
-}
-
-Sphere * Sphere::clone() const {
-    return new Sphere(pos, radius, mat);
 }

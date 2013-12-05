@@ -6,7 +6,7 @@
 
 #include "Canvas.hpp"
 #include "Scene.hpp"
-#include "Sphere.hpp"
+#include "Vector.hpp"
 #include "View.hpp"
 
 namespace cs354 {
@@ -28,8 +28,7 @@ namespace cs354 {
         Scene scene;
         Canvas canvas;
         
-        Sphere s1, s2;
-        Light light1, light2;
+        Vector3d move;
         bool do_light1, do_light2;
         bool make_glass;
         

@@ -2,20 +2,16 @@
 #include "TraceView.hpp"
 
 #include <cstdio>
+#include "Cylinder.hpp"
 #include "Geometry.hpp"
 #include "InfinitePlane.hpp"
+#include "Sphere.hpp"
 
 #include "Util.hpp"
 
 using namespace cs354;
 
-static Material _mat = Material(1.2, 50, 0.0, 0.0, 0.0,
-                                Color(0.8, 0.6, 0.8), Color(1.0, 0.8, 1.0));
 TraceView::TraceView() :
-    s1(Point3d(0, 0, 100), 30, _mat),
-    s2(Point3d(15, 0, 25), 2, _mat),
-    light1(Point3d(100, 25, 100), Color::Red),
-    light2(Point3d(0, 20, -2)),
     do_light1(true), do_light2(true),
     fov(75.0), render(true), trace_done(false), resize(false), last_update(0)
 { }
@@ -30,7 +26,9 @@ void TraceView::init() {
     trace_done = false;
     resize = true;
     make_glass = false;
-    do_light1 = false;
+    do_light1 = true;
+    do_light2 = true;
+    move = Vector3d();
     
     load(NULL);
 }
@@ -41,25 +39,44 @@ void TraceView::end() {
 
 static double _pixel_to_meter = 0.05;
 
+static Material _purple =
+    Material(1.0, 20, 0.0, 0.0, 0.0,
+             Color(0.6, 0.4, 0.6), Color(1.0, 0.8, 1.0));
+static Material _red =
+    Material(1.0, 100, 0.25, 0.0, 0.0,
+             Color(0.4, 0.1, 0.1), Color(0.9, 0.3, 0.3));
+static Material _green =
+    Material(1.0, 10, 0.0, 0.0, 0.0,
+             Color(0.1, 0.33, 0.1), Color(0.4, 0.9, 0.4));
+
 void TraceView::display() {
-    Sphere glass(s2);
-    glass.material(Material::Glass);
-    InfinitePlane floor(Vector3d(0, -1, 0), -32, Material::Mirror);
+    Light light1(Point3d(30, 25, 30), Color(0.75, 0.75, 0.75));
+    Light light2(Point3d(0, -10, -1), Color(0.75, 0.75, 0.75));
+    Light light3(Point3d(-50, 20, 50), Color(0.75,0.1,0.1));
+    Sphere s1(Point3d(0,0,100), 30, Material::Mirror);
+    Sphere s2(Point3d(14, 0, 60), 5, _purple);
+    Sphere s3(Point3d(-20,0, 30), 5, Material::Glass);
+    Sphere s4(Point3d(-35, 15, 25), 15, _purple);
+    Sphere s5(Point3d(35, 5, 100), 5, _purple);
+    InfinitePlane floor(Vector3d(0, -1, 0), -32, _green);
+    Cylinder cylinder(Point3d(100, 0, 50), 1, 100, _purple);
     
     scene.clear();
+    
     scene.add(floor);
     scene.add(s1);
-    if(make_glass) {
-        scene.add(glass);
-    }else {
-        scene.add(s2);
-    }
+    scene.add(s2);
+    scene.add(s3);
+    scene.add(s4);
+    scene.add(s5);
+    scene.add(cylinder);
     if(do_light1) {
         scene.add(light1);
     }
     if(do_light2) {
         scene.add(light2);
     }
+    //scene.add(light3);
     
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -83,9 +100,6 @@ void TraceView::display() {
         half_height = height * 0.5;
     }
     
-    glClearColor(0.0, 0.0, 0.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
-    
     if(render) {
         Ray r;
         Point3d origin(0, 0, z_camera);
@@ -101,6 +115,9 @@ void TraceView::display() {
         }
         render = false;
     }
+    
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
     
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glRasterPos2i(0,0);
@@ -167,23 +184,23 @@ void TraceView::keyPressed(int ch) {
         View::PostRedisplay();
         break;
     case KEY_LEFT:
-        s2.move(Vector3d(-1, 0, 0));
-        render = true;
+        move += Vector3d(-1, 0, 0);
+        //render = true;
         View::PostRedisplay();
         break;
     case KEY_RIGHT:
-        s2.move(Vector3d(1, 0, 0));
-        render = true;
+        move += Vector3d(1, 0, 0);
+        //render = true;
         View::PostRedisplay();
         break;
     case KEY_DOWN:
-        s2.move(Vector3d(0, 1, 0));
-        render = true;
+        move += Vector3d(0, 1, 0);
+        //render = true;
         View::PostRedisplay();
         break;
     case KEY_UP:
-        s2.move(Vector3d(0, -1, 0));
-        render = true;
+        move += Vector3d(0, -1, 0);
+        //render = true;
         View::PostRedisplay();
         break;
     }

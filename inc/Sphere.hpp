@@ -19,6 +19,8 @@ namespace cs354 {
         
         virtual Sphere * clone() const;
     protected:
+        bool find_dist(const Ray &ray, double *t0, double *t1) const;
+        
         Point3d pos;
         double radius;
     };

@@ -16,8 +16,8 @@ namespace cs354 {
         ~Light();
         
         Color get(const Ray &ray, const Ray &normal,
-                  const Material &material, bool diffuse = true,
-                  bool specular = true) const;
+                  const Material &material, Color *diffuse = NULL,
+                  Color *specular = NULL) const;
         
         Light & operator=(const Light &light);
         
