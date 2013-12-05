@@ -14,7 +14,7 @@ static Material _mat = Material(1.2, 50, 0.0, 0.0, 0.0,
 TraceView::TraceView() :
     s1(Point3d(0, 0, 50), 30, Material::Mirror),
     s2(Point3d(15, 0, 10), 2, _mat),
-    light1(normalize(Vector3d(0.5, -1.0, 0.0))),
+    light1(Point3d(100, 25, 100), Color::Red),
     light2(Point3d(0, 20, -2)),
     do_light1(true), do_light2(true),
     fov(75.0), render(true), trace_done(false), resize(false), last_update(0)
@@ -44,8 +44,10 @@ static double _pixel_to_meter = 0.05;
 void TraceView::display() {
     Sphere glass(s2);
     glass.material(Material::Glass);
+    InfinitePlane floor(Vector3d(0, 1, 0), -100, Material::Mirror);
     
     scene.clear();
+    scene.add(floor);
     scene.add(s1);
     if(make_glass) {
         scene.add(glass);

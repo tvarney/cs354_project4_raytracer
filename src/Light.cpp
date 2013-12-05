@@ -94,7 +94,7 @@ Light & Light::operator=(const Light &light) {
 
 Vector3d Light::direction(const Point3d &at) const {
     if(!point) {
-        return Vector3d(x, y, z);
+        return Vector3d(-x, -y, -z);
     }
     
     return (Point3d(x, y, z) - at).normalize();

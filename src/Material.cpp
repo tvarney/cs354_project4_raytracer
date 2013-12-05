@@ -4,7 +4,7 @@
 using namespace cs354;
 
 Material::Material() :
-    kd(0.5), ks(0.3), kt(0.0), kr(0.0), ior(0.0), base(Color::Silver),
+    kd(1.0), ks(40), kt(0.0), kr(0.0), ior(0.0), base(Color::Silver),
     highlight(Color::White)
 { }
 Material::Material(double kd, double ks, double kt, double kr, double ior,
@@ -35,6 +35,6 @@ const Material Material::Default =
 const Material Material::Glass(0.5, 0.2, 0.975, 0.1, 1.4919,
                                Color(0.9, 0.9, 0.9),
                                Color::White);
-const Material Material::Mirror(0.5, 100.0, 0.0, 0.85, 1.4919,
+const Material Material::Mirror(0.5, 100.0, 0.0, 0.95, 1.4919,
                                 Color(0.9, 0.9, 0.9),
                                 Color::White);

@@ -12,6 +12,8 @@ namespace cs354 {
         Ray(const Ray &source);
         ~Ray();
         
+        Ray project(double distance) const;
+        Ray project(double distance, const Vector3d newdir) const;
         Ray transform(const Point3d object_origin) const;
         
         Ray & operator=(const Ray rhs);

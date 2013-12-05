@@ -9,7 +9,7 @@
 namespace cs354 {
     class InfinitePlane : public Object {
     public:
-        InfinitePlane(const Vector3d &normal, const Point3d &point,
+        InfinitePlane(const Vector3d &normal, double distance,
                       const Material &material = Material::Default);
         InfinitePlane(const InfinitePlane &source);
         virtual ~InfinitePlane();
@@ -20,7 +20,7 @@ namespace cs354 {
         virtual InfinitePlane * clone() const;
     protected:
         Vector3d normal;
-        Point3d point; 
+        double distance;
     };
 }
 

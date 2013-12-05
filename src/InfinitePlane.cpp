@@ -5,37 +5,33 @@
 
 using namespace cs354;
 
-InfinitePlane::InfinitePlane(const Vector3d &normal, const Point3d &point,
+InfinitePlane::InfinitePlane(const Vector3d &normal, double distance,
                              const Material &material) :
-    Object(material), normal(normal), point(point)
+    Object(material), normal(normal), distance(distance)
 {
     
 }
 InfinitePlane::InfinitePlane(const InfinitePlane &source) :
-    Object(source.material()), normal(source.normal), point(source.point)
+    Object(source.material()), normal(source.normal), distance(source.distance)
 { }
 InfinitePlane::~InfinitePlane() { }
 
 bool InfinitePlane::intersect(const Ray &source, Ray &result) const {
-    double denom = source.origin.x * source.direction.x +
-        source.origin.y * source.direction.y +
-        source.origin.z * source.direction.z;
+    double denom = dot(source.direction, normal);
     if(denom == 0.0) {
-        /* Ray is parallel to plane */
-        return false;
+        return false; /*< Parallel */
     }
     
-    double t = dot(normal, point - source.origin) / denom;
+    double t = (-distance - dot(source.origin, normal)) / denom;
     if(t < 0.0) {
-        /* Plane is behind the origin of the eye */
-        return false;
+        return false; /* Plane is behind the origin */
     }
     
-    result.origin = source.origin + source.direction * t;
-    result.direction = normal;
+    result = source.project(t, (denom < 0.0 ? normal : -normal));
     return true;
 }
 
+/* A plane is infinitely thin, bisection returns the source ray */
 bool InfinitePlane::bisect(const Ray &source, Ray &result) const {
     result.origin = source.origin;
     result.direction = source.direction;
@@ -43,5 +39,5 @@ bool InfinitePlane::bisect(const Ray &source, Ray &result) const {
 }
 
 InfinitePlane * InfinitePlane::clone() const {
-    return new InfinitePlane(normal, point, material());
+    return new InfinitePlane(normal, distance, material());
 }

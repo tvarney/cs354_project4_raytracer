@@ -53,6 +53,22 @@ namespace cs354 {
     Vector<T> operator*(value val, const Vector<T> v) {
         return Vector<T>(v.x * ((T)val), v.y * ((T)val), v.z * ((T)val));
     }
+    
+    /* So many things want to do a dot product with a point, that I'm adding
+     * these
+     */
+    template <typename T>
+    T dot(const Vector<T> &lhs, const Point<T> &rhs) {
+        return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
+    }
+    template <typename T>
+    T dot(const Point<T> &lhs, const Vector<T> &rhs) {
+        return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
+    }
+    template <typename T>
+    T dot(const Point<T> &lhs, const Point<T> &rhs) {
+        return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
+    }
 }
 
 #endif

@@ -94,15 +94,26 @@ Color Scene::trace(const Ray ray, uint32_t depth, double c, Object *parent)
          * is displaced a tiny bit to keep it from intersecting with the same
          * position.
          */
-        lightray.origin = normal.origin;
-        lightray.direction = _lights[i].direction(lightray.origin);
-        lightray.origin = lightray.origin + (lightray.direction * 0.001);
-        blocking = intersect(lightray, lightnorm, NULL);
-        /* TODO: Check if the blocking object is transparent;
-         * if so, calculate refracted rays.
-         */
-        if(blocking == NULL) {
+        if(_lights[i].point == false) {
             direct += _lights[i].get(ray, normal, obj->material());
+        }else {
+            lightray.origin = normal.origin;
+            lightray.direction = _lights[i].direction(lightray.origin);
+            lightray.origin = lightray.origin + (lightray.direction * 0.001);
+            blocking = intersect(lightray, lightnorm, NULL);
+            /* TODO: Check if the blocking object is transparent;
+             * if so, calculate refracted rays.
+             */
+            Point3d lightpos(_lights[i].x, _lights[i].y, _lights[i].z);
+            if(blocking == NULL) {
+                direct += _lights[i].get(ray, normal, obj->material());
+            }else {
+                double d1 = (lightpos - lightray.origin).magsquared();
+                double d2 = (lightnorm.origin - lightray.origin).magsquared();
+                if(d1 < d2) {
+                    direct += _lights[i].get(ray, normal, obj->material());
+                }
+            }
         }
     }
     
