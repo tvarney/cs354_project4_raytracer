@@ -50,7 +50,7 @@ clean:
 	rm -f ${SRC}/*.o ${EXEC} ${PARSERS} ${PARSER_HEADERS} ${LEXERS}
 
 run: ${EXEC}
-	./${EXEC} 2> logs/errlog.txt
+	./${EXEC}
 
 lines:
 	@wc -l ${SRC}/*.cpp ${SRC}/*.l ${SRC}/*.y ${INC}/*.hpp
