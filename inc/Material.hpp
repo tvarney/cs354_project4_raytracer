@@ -36,6 +36,7 @@ namespace cs354 {
         
         static const Material Default;
         static const Material Glass, Mirror;
+        static const Material RedGlass;
     };
 }
 

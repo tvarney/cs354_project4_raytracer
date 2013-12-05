@@ -3,12 +3,13 @@
 
 #include <cmath>
 #include <cstdio>
+#include <iostream>
 #include "Geometry.hpp"
 #include "Util.hpp"
 
 using namespace cs354;
 
-double Light::Attenuation = 0.05;
+double Light::Attenuation = 0.02;
 bool Light::Ambient = true;
 bool Light::Diffuse = true;
 bool Light::Specular = true;
@@ -33,12 +34,15 @@ Light::~Light() { }
 static inline double saturate(double val) {
     return (val > 1.0 ? 1.0 : (val < 0.0 ? 0.0 : val));
 }
-Color Light::get(const Ray &ray, const Ray &normal, const Material &mat)
-    const
+Color Light::get(const Ray &ray, const Ray &normal, const Material &mat,
+                 bool diffuse, bool specular) const
 {
     if(!Light::Diffuse && !Light::Specular) {
         if(!Light::Ambient) {
-            return NormalToColor(normal.direction);
+            Vector3d ld = direction(normal.origin);
+            double ndotl = saturate(dot(normal.direction, ld));
+            return Color(ndotl, ndotl, ndotl);
+            //return NormalToColor(normal.direction);
         }
         return Color::Black;
     }
@@ -56,22 +60,21 @@ Color Light::get(const Ray &ray, const Ray &normal, const Material &mat)
             attenuation = 1.0;
         }
     }else {
-        light_dir = Vector3d(x, y, z);
+        light_dir = Vector3d(-x, -y, -z);
         attenuation = 1.0;
     }
     Color result;
-    if(Light::Diffuse) {
+    if(Light::Diffuse && diffuse) {
         double ndotl = saturate(dot(normal.direction, light_dir));
         result += mat.base * (color * (mat.kd * ndotl * attenuation));
     }
     
-    if(Light::Specular) {
+    if(Light::Specular && specular) {
         Vector3d eye_dir = -(ray.direction);
         /* Reflect L about normal.direction  */
         double base;
         if(Light::Half) {
             Vector3d half = normalize(light_dir + eye_dir);
-            //Vector3d half = normalize(reflected + normal.direction);
             base = saturate(dot(half, normal.direction));
         }else {
             Vector3d reflected = reflect(light_dir,normal.direction);

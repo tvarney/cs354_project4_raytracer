@@ -2,6 +2,7 @@
 #include "Sphere.hpp"
 
 #include <cstdio>
+#include <iostream>
 #include "Geometry.hpp"
 
 using namespace cs354;
@@ -51,14 +52,14 @@ bool Sphere::intersect(const Ray &ray, Ray &result) const {
 
 bool Sphere::bisect(const Ray &ray, Ray &result) const {
     Ray r = ray.transform(pos);
-    double a = dot(r.direction, ray.direction);
-    double b = 2.0 * (r.direction.x * r.origin.x + r.direction.y * r.origin.y +
-                      r.direction.z * r.origin.z);
-    double c = (r.origin.x * r.origin.x + r.origin.y * r.origin.y +
-                r.origin.z * r.origin.z) - radius * radius;
+    double a = dot(ray.direction, ray.direction);
+    double b = 2.0 * dot(r.direction, r.origin);
+    double c = dot(r.origin, r.origin);
     
     double disc = b*b - 4 * a * c;
     if(disc < 0) {
+        std::cout << "Discriminant < 0:" << std::endl <<
+            "a: " << a << " b: " << b << " c: " << c << std::endl;
         return false;
     }
     
@@ -74,14 +75,14 @@ bool Sphere::bisect(const Ray &ray, Ray &result) const {
     double t1 = c / q;
     
     if(t1 < 0) {
+        std::cout << "t1 < 0" << std::endl;
         return false;
     }
     
     double t = (t0 <= 0 ? t1 : t0);
     
-    result.origin = ray.origin + ray.direction * t;
+    result = ray.project(t);
     result.direction = (result.origin - pos) / radius;
-    
     return true;
 }
 

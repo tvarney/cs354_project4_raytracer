@@ -112,6 +112,10 @@ Color Scene::trace(const Ray ray, uint32_t depth, double c, Object *parent)
                 double d2 = (lightnorm.origin - lightray.origin).magsquared();
                 if(d1 < d2) {
                     direct += _lights[i].get(ray, normal, obj->material());
+                }else if(blocking->material().kt > 0.0) {
+                    direct += _lights[i].get(ray, normal, obj->material()) *
+                        blocking->material().kt;
+                    
                 }
             }
         }
@@ -125,8 +129,11 @@ Color Scene::trace(const Ray ray, uint32_t depth, double c, Object *parent)
     if(_reflect && c * kr > _cutoff && depth > 1) {
         Ray reflect_ray;
         reflect_ray.origin = normal.origin;
+        /* There is a problem with the reflection code; THIS PRODUCES THE
+           RIGHT RESULTS */
         reflect_ray.direction =
             -cs354::reflect(ray.direction, normal.direction);
+        reflect_ray.direction.z *= -1;
         reflection = trace(reflect_ray, depth - 1, c * kr, obj);
     }
     
@@ -134,25 +141,14 @@ Color Scene::trace(const Ray ray, uint32_t depth, double c, Object *parent)
     Color c_refracted;
     double tamt = 0.0;
     if(c * kt > _cutoff && depth > 1) {
-        /*
-        Ray refracted;
-        refracted.origin = normal.origin;
-        refracted.direction = refract(ray.direction, normal.direction,
-                                      1.0, );
-        Ray inside;
-        if(!obj->bisect(refracted, inside)) {
-            std::printf("Couldn't bisect object with ray, aborting.\n");
-            c_refracted = obj->material().base * _ambient;
-        }else {
-            double distance = (exit.origin - refracted.origin).magnitude();
-            tamt = kt * distance;
-            
-            c_refracted = trace(exit, depth - 1, c * tamt, obj);
-        }
-        */
-        c_refracted = obj->material().base * _ambient;
+        //direct = Color::Black;
+        c_refracted = trace(ray, depth - 1, c * kt, obj);
     }
     
+    /*
+    if(!_reflect) {
+        kr = 0.0;
+    }
     double total = tamt + kr;
     if(total > 1.0) {
         tamt /= total;
@@ -160,8 +156,8 @@ Color Scene::trace(const Ray ray, uint32_t depth, double c, Object *parent)
         total = 1.0;
     }
     double kd = 1.0 - total;
-    
-    return (direct * kd * c) + (reflection) + (c_refracted);
+    */
+    return (direct * c) + (reflection) + (c_refracted);
 }
 
 Object* Scene::intersect(const Ray ray, Ray & normal, const Object *ignore)

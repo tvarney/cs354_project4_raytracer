@@ -12,8 +12,8 @@ using namespace cs354;
 static Material _mat = Material(1.2, 50, 0.0, 0.0, 0.0,
                                 Color(0.8, 0.6, 0.8), Color(1.0, 0.8, 1.0));
 TraceView::TraceView() :
-    s1(Point3d(0, 0, 50), 30, Material::Mirror),
-    s2(Point3d(15, 0, 10), 2, _mat),
+    s1(Point3d(0, 0, 100), 30, _mat),
+    s2(Point3d(15, 0, 25), 2, _mat),
     light1(Point3d(100, 25, 100), Color::Red),
     light2(Point3d(0, 20, -2)),
     do_light1(true), do_light2(true),
@@ -44,7 +44,7 @@ static double _pixel_to_meter = 0.05;
 void TraceView::display() {
     Sphere glass(s2);
     glass.material(Material::Glass);
-    InfinitePlane floor(Vector3d(0, 1, 0), -100, Material::Mirror);
+    InfinitePlane floor(Vector3d(0, -1, 0), -32, Material::Mirror);
     
     scene.clear();
     scene.add(floor);

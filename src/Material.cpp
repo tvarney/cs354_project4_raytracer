@@ -30,11 +30,13 @@ Material & Material::operator=(const Material &rhs) {
     return *this;
 }
 
-const Material Material::Default =
-    Material();
-const Material Material::Glass(0.5, 0.2, 0.975, 0.1, 1.4919,
-                               Color(0.9, 0.9, 0.9),
-                               Color::White);
-const Material Material::Mirror(0.5, 100.0, 0.0, 0.95, 1.4919,
+const Material Material::Default = Material();
+const Material Material::Glass(1.0, 100, 0.75, 0.0, 1.4919,
+                               Color(0.1, 0.1, 0.1),
+                               Color(0.5, 0.5, 0.5));
+const Material Material::Mirror(1.0, 100.0, 0.0, 0.95, 1.4919,
                                 Color(0.9, 0.9, 0.9),
                                 Color::White);
+const Material Material::RedGlass(1.0, 128, 0.95, 0.0, 1.4919,
+                                  Color(1.0, 0.5, 0.5),
+                                  Color(1.0, 0.75, 0.75));

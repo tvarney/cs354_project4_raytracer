@@ -22,7 +22,7 @@ bool InfinitePlane::intersect(const Ray &source, Ray &result) const {
         return false; /*< Parallel */
     }
     
-    double t = (-distance - dot(source.origin, normal)) / denom;
+    double t = (distance - dot(source.origin, normal)) / denom;
     if(t < 0.0) {
         return false; /* Plane is behind the origin */
     }
